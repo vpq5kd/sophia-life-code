@@ -34,7 +34,7 @@ void check_cells(void * args){
 
 			}
 		}
-		pthread_barrier_wait(cc_args -> barrier);
+		pthread_barrier_wait(cc_args->barrier);
 	}
 }
 
@@ -74,7 +74,7 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 		args[thread_num].args_state = state;
 		args[thread_num].args_next_state = next_state;
 
-		
+		pthread_barrier_init(&args[thread_num].barrier);
 		pthread_create(&check_threads[thread_num], NULL, check_cells, args[thread_num]);		
 
 		
