@@ -16,7 +16,6 @@
 
 void simulate_life_serial(LifeBoard *state, int steps) {
     LifeBoard *next_state = LB_new(state->width, state->height);
-    
     for (int step = 0; step < steps; step += 1) {
 
         /* We use the range [1, width - 1) here instead of

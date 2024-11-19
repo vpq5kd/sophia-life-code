@@ -16,7 +16,7 @@ void * check_cells(void * args){
 
 	arguments * cc_args = (arguments *) args;
 	for (int step = 0; step < cc_args->steps; step +=1 ){
-		for (int y = cc_args->height_start; y < cc_args->height_end ; y += 1) {
+		for (int y = cc_args->height_start; y < cc_args->height_end; y += 1) {
 			for (int x = 1; x < cc_args->args_state->width-1; x += 1) {
 				 /* For each cell, examine a 3x3 "window" of cells around it,
 					 * and count the number of live (true) cells in the window. */
@@ -52,11 +52,11 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	LifeBoard *next_state = LB_new(state->width, state->height);
 
 	arguments args[threads];	
-	int height_sep = state->height/threads;
+	int height_sep = (state->height)/threads;
 
-	int height_remainder = state->height%threads;
+	int height_remainder = (state->height)%threads;
 
-	int hold_height_start = 1;       
+	int hold_height_start = 0;       
 	for (int thread_num = 0; thread_num < threads; thread_num +=1){
 
 		if (thread_num == 0){
@@ -64,18 +64,21 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 		} else {
 			args[thread_num].thread_swap = 0;
 		}
-		if (thread_num < (threads-1)){	
 			
-			args[thread_num].height_start = hold_height_start;
-			args[thread_num].height_end = (hold_height_start + height_sep) - 1;
-			
-			hold_height_start = args[thread_num].height_end + 1;
-		
-		} else{
-			
-			args[thread_num].height_start = hold_height_start;
-			args[thread_num].height_end = (hold_height_start + height_remainder) -1;
+		args[thread_num].height_start = hold_height_start;
+		args[thread_num].height_end = (hold_height_start + height_sep)-1;
+		if (thread_num <= height_remainder) {
+			args[thread_num].height_end +=1;
 		}
+		
+		if (thread_num == 0){
+			args[thread_num].height_start+=1;
+		} 
+		if (thread_num == threads-1){
+			args[thread_num].height_end-=1;
+		}
+		hold_height_start = args[thread_num].height_end+1;
+		printf("thread_num: %d, height_start: %d, height_end: %d\n", thread_num, args[thread_num].height_start, args[thread_num].height_end);	
 
 		args[thread_num].steps = steps;
 		args[thread_num].args_state = state;
