@@ -14,9 +14,9 @@ typedef struct function_arguments{
 void * check_cells(void * args){
 
 	arguments * cc_args = (arguments *) args;
-	while(1){
+	for (int step = 0; step < steps; step +=1 ){
 		for (int y = cc_args->height_start; y < cc_args->height_end ; y += 1) {
-			for (int x = cc_args->width_start; x < cc_args->width_end; x += 1) {
+			for (int x = 1; x < cc_args->state->widht-1; x += 1) {
 				 /* For each cell, examine a 3x3 "window" of cells around it,
 					 * and count the number of live (true) cells in the window. */
 					int live_in_window = 0;
@@ -35,6 +35,7 @@ void * check_cells(void * args){
 			}
 		}
 		pthread_barrier_wait(cc_args->step_barrier);
+		LB_swap(cc_args->state, cc_args->next_state);
 	}
 }
 
@@ -81,11 +82,6 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 		pthread_create(&check_threads[thread_num], NULL, check_cells, &args[thread_num]);		
 		
 		
-	}
-	for (int step = 0; step < steps; step +=1 ){
-		pthread_barrier_wait(&step_barrier);	
-        /* now that we computed next_state, make it the current state */
-        LB_swap(state, next_state);		
 	}
 
 	for(int thread_num = 0; thread_num<threads; thread_num++){
