@@ -1,7 +1,7 @@
 #include "life.h"
 #include <pthread.h>
 
-typdef struct function_arguments(){		
+typedef struct function_arguments{		
 	int height_start;
 	int height_end;
 	int width_start;
@@ -11,7 +11,7 @@ typdef struct function_arguments(){
 	pthread_barrier_t * step_barrier;
 } arguments;
 
-void check_cells(void * args){
+void * check_cells(void * args){
 
 	arguments * cc_args = (arguments *) args;
 	while(1){
@@ -43,7 +43,7 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	
 	pthread_t check_threads[threads];
 	pthread_barrier_t step_barrier;
-	pthread_barrier_init(&step_barrier);
+	pthread_barrier_init(&step_barrier, NULL, threads);
 
 	LifeBoard *next_state = LB_new(state->width, state->height);
 
@@ -53,14 +53,16 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 
 	int width_remainder = state->width%threads;
 	int height_remainder = state->height%threads;
-       
+
+	int hold_height_start = 0;
+	int hold_width_start = 0;       
 	for (int thread_num = 0; thread_num < threads; thread_num +=1){
 		if (thread_num < (threads-1)){	
 			
 			args[thread_num].height_start = hold_height_start;
 			args[thread_num].height_end = (hold_height_start + height_sep) - 1;
 			args[thread_num].width_start = hold_width_start;
-			args[thread_num].width_end = (hold_width_end + width_sep) - 1;
+			args[thread_num].width_end = (hold_width_start + width_sep) - 1;
 			
 			hold_height_start = args[thread_num].height_end + 1;
 			hold_width_start = args[thread_num].width_end + 1;
@@ -75,14 +77,13 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 
 		args[thread_num].args_state = state;
 		args[thread_num].args_next_state = next_state;
-		args[thread_num].step_barrier = step_barrier
-;
+		args[thread_num].step_barrier = &step_barrier;
 		pthread_create(&check_threads[thread_num], NULL, check_cells, &args[thread_num]);		
-
+		
 		
 	}
 	for (int step = 0; step < steps; step +=1 ){
-		pthread_barrier_wait(step_barrier);	
+		pthread_barrier_wait(&step_barrier);	
         /* now that we computed next_state, make it the current state */
         LB_swap(state, next_state);		
 	}
@@ -90,6 +91,6 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	for(int thread_num = 0; thread_num<threads; thread_num++){
 		pthread_join(check_threads[thread_num], NULL);
 	}
-	pthread_barrier_destroy(step_barrier);
+	pthread_barrier_destroy(&step_barrier);
     LB_del(next_state);
 }
