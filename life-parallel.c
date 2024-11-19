@@ -1,15 +1,16 @@
 #include "life.h"
 #include <pthread.h>
 
+typdef struct function_arguments(){		
+	int height_start;
+	int height_end;
+	int width_start;
+	int width_end;
+	LifeBoard * args_state;
+	LifeBoard * args_next_state;
+} arguments;
+
 void check_cells(void * args){
-	typdef struct function_arguments(){		
-		int height_start;
-		int height_end;
-		int width_start;
-		int width_end;
-		LifeBoard * args_state;
-		LifeBoard * args_next_state;
-	} arguments;
 
 	arguments * cc_args = (arguments *) args;
 
@@ -47,13 +48,6 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	int width_remainder = state->width%threads;
 	int height_remainder = state->height%threads;
 
-	typedef struct function_arguments{
-		int height_start;
-		int height_end;
-		int width_start;
-		int width_end;
-	} arguments;
-
 	
 	for (int step = 0; step < steps; step += 1){
 
@@ -78,6 +72,11 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 				args.width_start = hold_width_start;
 				args.width_end = (hold_width_start + width_remainder) -1;
 			}
+
+			args.args_state = state;
+			args.args_next_state = next_state;
+
+			
 
 			
 		}		
