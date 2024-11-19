@@ -41,7 +41,20 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 
 	
 	for (int step = 0; step < steps; step += 1){
-		
+
+		int hold_height_start = 0;
+		int hold_width_start = 0;
+		for (int thread_num = 0; thread_num < threads; thread_num +=1){
+			if (thread_num < (threads-1)){	
+				arguments args;
+				args.height_start = hold_height_start;
+				args.height_end = (hold_height_start + height_sep) - 1;
+				args.width_start = hold_width_start;
+				args.width_end = (hold_width_end + width_sep) - 1;
+			};
+
+			
+		}		
 	}
 	
 }
