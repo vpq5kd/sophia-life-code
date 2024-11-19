@@ -4,8 +4,6 @@
 typedef struct function_arguments{		
 	int height_start;
 	int height_end;
-	int width_start;
-	int width_end;
 	int steps;
 
 	int thread_swap;
@@ -54,14 +52,11 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	LifeBoard *next_state = LB_new(state->width, state->height);
 
 	arguments args[threads];	
-	int width_sep = state->width/threads;
 	int height_sep = state->height/threads;
 
-	int width_remainder = state->width%threads;
 	int height_remainder = state->height%threads;
 
-	int hold_height_start = 0;
-	int hold_width_start = 0;       
+	int hold_height_start = 1;       
 	for (int thread_num = 0; thread_num < threads; thread_num +=1){
 
 		if (thread_num == 0){
@@ -73,18 +68,13 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 			
 			args[thread_num].height_start = hold_height_start;
 			args[thread_num].height_end = (hold_height_start + height_sep) - 1;
-			args[thread_num].width_start = hold_width_start;
-			args[thread_num].width_end = (hold_width_start + width_sep) - 1;
 			
 			hold_height_start = args[thread_num].height_end + 1;
-			hold_width_start = args[thread_num].width_end + 1;
 		
 		} else{
 			
 			args[thread_num].height_start = hold_height_start;
 			args[thread_num].height_end = (hold_height_start + height_remainder) -1;
-			args[thread_num].width_start = hold_width_start;
-			args[thread_num].width_end = (hold_width_start + width_remainder) -1;
 		}
 
 		args[thread_num].steps = steps;
