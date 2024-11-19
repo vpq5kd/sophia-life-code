@@ -7,6 +7,8 @@ typedef struct function_arguments{
 	int width_start;
 	int width_end;
 	int steps;
+
+	int thread_swap;
 	LifeBoard * args_state;
 	LifeBoard * args_next_state;
 	pthread_barrier_t * step_barrier;
@@ -35,7 +37,9 @@ void * check_cells(void * args){
 			}
 		}
 		pthread_barrier_wait(cc_args->step_barrier);
-		LB_swap(cc_args->args_state, cc_args->args_next_state);
+		if(cc_args->thread_swap) LB_swap(cc_args->args_state, cc_args->args_next_state);
+
+		pthread_barrier_wait(cc_args->step_barrier);
 	}
 	return NULL;
 }
@@ -59,6 +63,12 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	int hold_height_start = 0;
 	int hold_width_start = 0;       
 	for (int thread_num = 0; thread_num < threads; thread_num +=1){
+
+		if (thread_num == 0){
+			args[thread_num].thread_swap = 1;
+		} else {
+			args[thread_num].thread_swap = 0;
+		}
 		if (thread_num < (threads-1)){	
 			
 			args[thread_num].height_start = hold_height_start;
