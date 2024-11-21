@@ -54,30 +54,40 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 	arguments args[threads];	
 	int height_sep = (state->height)/threads;
 
-	int height_remainder = (state->height)%threads;
+	int height_remainder = (state->height) - (height_sep*threads);
 
-	int hold_height_start = 0;       
 	for (int thread_num = 0; thread_num < threads; thread_num +=1){
 
+
+		/* designates the first thread as the thread responsible for swapping the states */
 		if (thread_num == 0){
 			args[thread_num].thread_swap = 1;
 		} else {
 			args[thread_num].thread_swap = 0;
 		}
-			
-		args[thread_num].height_start = hold_height_start;
-		args[thread_num].height_end = (hold_height_start + height_sep)-1;
-		if (thread_num <= height_remainder) {
-			args[thread_num].height_end +=1;
+	
+		int add_remainder = 0;
+		if(thread_num == threads - 1){
+			add_remainder = height_remainder;
 		}
+		/* basic delegation of threads to different sectors */
 		
+		args[thread_num].height_start = thread_num*height_sep;
+		args[thread_num].height_end = (thread_num + 1)*height_sep + add_remainder;
+
+		
+		/* offset the starting height if we are on the first thread */
 		if (thread_num == 0){
 			args[thread_num].height_start+=1;
 		} 
+		
+		/* offset the ending height if we are on the last thread */
 		if (thread_num == threads-1){
 			args[thread_num].height_end-=1;
 		}
-		hold_height_start = args[thread_num].height_end+1;
+
+		/* next height start = height_end+1 */
+ 
 		printf("thread_num: %d, height_start: %d, height_end: %d\n", thread_num, args[thread_num].height_start, args[thread_num].height_end);	
 
 		args[thread_num].steps = steps;
