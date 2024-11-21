@@ -88,7 +88,7 @@ void simulate_life_parallel(int threads, LifeBoard *state, int steps) {
 
 		/* next height start = height_end+1 */
  
-		printf("thread_num: %d, height_start: %d, height_end: %d\n", thread_num, args[thread_num].height_start, args[thread_num].height_end);	
+//		printf("thread_num: %d, height_start: %d, height_end: %d\n", thread_num, args[thread_num].height_start, args[thread_num].height_end);	
 
 		args[thread_num].steps = steps;
 		args[thread_num].args_state = state;
